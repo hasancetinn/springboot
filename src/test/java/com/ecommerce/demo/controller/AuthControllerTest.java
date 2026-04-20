@@ -5,7 +5,7 @@ import com.ecommerce.demo.dto.request.RegisterRequest;
 import com.ecommerce.demo.dto.request.TokenRefreshRequest;
 import com.ecommerce.demo.dto.response.ApiResponse;
 import com.ecommerce.demo.dto.response.AuthResponse;
-import com.ecommerce.demo.exception.AuthException;
+import com.ecommerce.demo.exception.ApiException;
 import com.ecommerce.demo.exception.TokenException;
 import com.ecommerce.demo.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,8 +79,8 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("register() → AuthException fırlatmalı (kullanıcı adı zaten var)")
-    void register_shouldThrowAuthException_whenUsernameAlreadyTaken() {
+    @DisplayName("register() → ApiException fırlatmalı (kullanıcı adı zaten var)")
+    void register_shouldThrowApiException_whenUsernameAlreadyTaken() {
         RegisterRequest request = RegisterRequest.builder()
                 .username("existinguser")
                 .email("existing@example.com")
@@ -88,18 +88,18 @@ class AuthControllerTest {
                 .build();
 
         when(authService.register(any(RegisterRequest.class)))
-                .thenThrow(new AuthException("Username is already taken", HttpStatus.CONFLICT));
+                .thenThrow(new ApiException("Username is already taken", HttpStatus.CONFLICT));
 
         assertThatThrownBy(() -> authController.register(request))
-                .isInstanceOf(AuthException.class)
+                .isInstanceOf(ApiException.class)
                 .hasMessage("Username is already taken");
 
         verify(authService, times(1)).register(any(RegisterRequest.class));
     }
 
     @Test
-    @DisplayName("register() → AuthException fırlatmalı (email zaten kullanımda)")
-    void register_shouldThrowAuthException_whenEmailAlreadyInUse() {
+    @DisplayName("register() → ApiException fırlatmalı (email zaten kullanımda)")
+    void register_shouldThrowApiException_whenEmailAlreadyInUse() {
         RegisterRequest request = RegisterRequest.builder()
                 .username("newuser")
                 .email("taken@example.com")
@@ -107,10 +107,10 @@ class AuthControllerTest {
                 .build();
 
         when(authService.register(any(RegisterRequest.class)))
-                .thenThrow(new AuthException("Email is already in use", HttpStatus.CONFLICT));
+                .thenThrow(new ApiException("Email is already in use", HttpStatus.CONFLICT));
 
         assertThatThrownBy(() -> authController.register(request))
-                .isInstanceOf(AuthException.class)
+                .isInstanceOf(ApiException.class)
                 .hasMessage("Email is already in use");
     }
 
@@ -179,18 +179,18 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("login() → AuthException fırlatmalı (kullanıcı bulunamadı)")
-    void login_shouldThrowAuthException_whenUserNotFound() {
+    @DisplayName("login() → ApiException fırlatmalı (kullanıcı bulunamadı)")
+    void login_shouldThrowApiException_whenUserNotFound() {
         LoginRequest request = LoginRequest.builder()
                 .username("nonexistent")
                 .password("password123")
                 .build();
 
         when(authService.login(any(LoginRequest.class)))
-                .thenThrow(new AuthException("User not found", HttpStatus.NOT_FOUND));
+                .thenThrow(new ApiException("User not found", HttpStatus.NOT_FOUND));
 
         assertThatThrownBy(() -> authController.login(request))
-                .isInstanceOf(AuthException.class)
+                .isInstanceOf(ApiException.class)
                 .hasMessage("User not found");
     }
 

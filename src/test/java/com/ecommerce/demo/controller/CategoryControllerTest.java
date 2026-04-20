@@ -3,7 +3,7 @@ package com.ecommerce.demo.controller;
 import com.ecommerce.demo.dto.request.CategoryRequest;
 import com.ecommerce.demo.dto.response.ApiResponse;
 import com.ecommerce.demo.dto.response.PagedResponse;
-import com.ecommerce.demo.exception.AuthException;
+import com.ecommerce.demo.exception.ApiException;
 import com.ecommerce.demo.exception.NotFoundException;
 import com.ecommerce.demo.model.Category;
 import com.ecommerce.demo.service.CategoryService;
@@ -193,15 +193,15 @@ class CategoryControllerTest {
     }
 
     @Test
-    @DisplayName("store() → AuthException fırlatmalı (kategori adı zaten var)")
-    void store_shouldThrowAuthException_whenCategoryNameAlreadyExists() {
+    @DisplayName("store() → ApiException fırlatmalı (kategori adı zaten var)")
+    void store_shouldThrowApiException_whenCategoryNameAlreadyExists() {
         CategoryRequest request = new CategoryRequest("Electronics");
 
         when(categoryService.save(any(CategoryRequest.class)))
-                .thenThrow(new AuthException("Category name already exists", HttpStatus.CONFLICT));
+                .thenThrow(new ApiException("Category name already exists", HttpStatus.CONFLICT));
 
         assertThatThrownBy(() -> categoryController.store(request))
-                .isInstanceOf(AuthException.class)
+                .isInstanceOf(ApiException.class)
                 .hasMessage("Category name already exists");
     }
 
@@ -255,15 +255,15 @@ class CategoryControllerTest {
     }
 
     @Test
-    @DisplayName("update() → AuthException fırlatmalı (yeni isim çakışıyor)")
-    void update_shouldThrowAuthException_whenNewNameConflicts() {
+    @DisplayName("update() → ApiException fırlatmalı (yeni isim çakışıyor)")
+    void update_shouldThrowApiException_whenNewNameConflicts() {
         CategoryRequest request = new CategoryRequest("Taken Name");
 
         when(categoryService.update(eq(1L), any(CategoryRequest.class)))
-                .thenThrow(new AuthException("Category name already exists (potentially as deleted)", HttpStatus.CONFLICT));
+                .thenThrow(new ApiException("Category name already exists (potentially as deleted)", HttpStatus.CONFLICT));
 
         assertThatThrownBy(() -> categoryController.update(1L, request))
-                .isInstanceOf(AuthException.class)
+                .isInstanceOf(ApiException.class)
                 .hasMessage("Category name already exists (potentially as deleted)");
     }
 
@@ -288,7 +288,7 @@ class CategoryControllerTest {
     @Test
     @DisplayName("delete() → 200 OK, data null döner")
     void delete_shouldReturn200_whenCategoryExists() {
-        doNothing().when(categoryService).deleteById(1L);
+        doNothing().when(categoryService).delete(1L);
 
         ResponseEntity<ApiResponse<Void>> response = categoryController.delete(1L);
 
@@ -297,14 +297,14 @@ class CategoryControllerTest {
         assertThat(response.getBody().getMessage()).isEqualTo("Category deleted successfully");
         assertThat(response.getBody().getData()).isNull();
 
-        verify(categoryService, times(1)).deleteById(1L);
+        verify(categoryService, times(1)).delete(1L);
     }
 
     @Test
     @DisplayName("delete() → NotFoundException fırlatmalı (kategori yok)")
     void delete_shouldThrowNotFoundException_whenCategoryNotFound() {
         doThrow(new NotFoundException("Category not found with ID: 99"))
-                .when(categoryService).deleteById(99L);
+                .when(categoryService).delete(99L);
 
         assertThatThrownBy(() -> categoryController.delete(99L))
                 .isInstanceOf(NotFoundException.class)
@@ -315,10 +315,21 @@ class CategoryControllerTest {
     @DisplayName("delete() → doğru ID service'e iletilmeli")
     void delete_shouldPassCorrectIdToService() {
         Long categoryId = 7L;
-        doNothing().when(categoryService).deleteById(categoryId);
+        doNothing().when(categoryService).delete(categoryId);
 
         categoryController.delete(categoryId);
 
-        verify(categoryService).deleteById(categoryId);
+        verify(categoryService).delete(categoryId);
+    }
+
+    @Test
+    @DisplayName("delete() → ApiException fırlatmalı (kategoriye bağlı ürünler var)")
+    void delete_shouldThrowApiException_whenCategoryHasProducts() {
+        doThrow(new ApiException("Cannot delete category with associated products", HttpStatus.CONFLICT))
+                .when(categoryService).delete(1L);
+
+        assertThatThrownBy(() -> categoryController.delete(1L))
+                .isInstanceOf(ApiException.class)
+                .hasMessage("Cannot delete category with associated products");
     }
 }

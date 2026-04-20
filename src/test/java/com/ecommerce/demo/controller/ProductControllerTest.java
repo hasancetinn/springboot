@@ -260,7 +260,7 @@ class ProductControllerTest {
     @DisplayName("store() → 201 Created, yeni ürün döner")
     void store_shouldReturn201_whenRequestIsValid() {
         ProductRequest request = new ProductRequest(
-                "Electronics", "Laptop", "Gaming laptop", "laptop.jpg", 1500.0
+                1L, "Laptop", "Gaming laptop", "laptop.jpg", 1500.0
         );
 
         when(productService.save(any(ProductRequest.class))).thenReturn(laptop);
@@ -279,7 +279,7 @@ class ProductControllerTest {
     @DisplayName("store() → NotFoundException fırlatmalı (kategori bulunamadı)")
     void store_shouldThrowNotFoundException_whenCategoryNotFound() {
         ProductRequest request = new ProductRequest(
-                "NonExistentCategory", "Laptop", "Description", null, 1500.0
+                999L, "Laptop", "Description", null, 1500.0
         );
 
         when(productService.save(any(ProductRequest.class)))
@@ -294,7 +294,7 @@ class ProductControllerTest {
     @DisplayName("store() → request service'e doğru iletilmeli")
     void store_shouldPassRequestToService() {
         ProductRequest request = new ProductRequest(
-                "Electronics", "Laptop", "Description", "img.jpg", 999.99
+                1L, "Laptop", "Description", "img.jpg", 999.99
         );
 
         when(productService.save(request)).thenReturn(laptop);
@@ -308,7 +308,7 @@ class ProductControllerTest {
     @DisplayName("store() → kategori bilgisiyle birlikte ürün dönmeli")
     void store_shouldReturnProductWithCategory() {
         ProductRequest request = new ProductRequest(
-                "Electronics", "Laptop", "Description", null, 1500.0
+                1L, "Laptop", "Description", null, 1500.0
         );
 
         when(productService.save(any(ProductRequest.class))).thenReturn(laptop);
@@ -330,7 +330,7 @@ class ProductControllerTest {
                 .build();
 
         ProductRequest request = new ProductRequest(
-                "Electronics", "Tablet", "A tablet", null, 500.0
+                1L, "Tablet", "A tablet", null, 500.0
         );
 
         when(productService.save(any(ProductRequest.class))).thenReturn(productWithoutImage);

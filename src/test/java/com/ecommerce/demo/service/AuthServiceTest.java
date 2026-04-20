@@ -4,7 +4,7 @@ import com.ecommerce.demo.dto.request.LoginRequest;
 import com.ecommerce.demo.dto.request.RegisterRequest;
 import com.ecommerce.demo.dto.request.TokenRefreshRequest;
 import com.ecommerce.demo.dto.response.AuthResponse;
-import com.ecommerce.demo.exception.AuthException;
+import com.ecommerce.demo.exception.ApiException;
 import com.ecommerce.demo.exception.TokenException;
 import com.ecommerce.demo.model.RefreshToken;
 import com.ecommerce.demo.model.Role;
@@ -138,8 +138,8 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("register() → AuthException fırlatmalı (kullanıcı adı zaten alınmış)")
-    void register_shouldThrowAuthException_whenUsernameAlreadyTaken() {
+    @DisplayName("register() → ApiException fırlatmalı (kullanıcı adı zaten alınmış)")
+    void register_shouldThrowApiException_whenUsernameAlreadyTaken() {
         RegisterRequest request = RegisterRequest.builder()
                 .username("existinguser")
                 .email("new@example.com")
@@ -150,7 +150,7 @@ class AuthServiceTest {
 
         // Çalıştır & Doğrula
         assertThatThrownBy(() -> authService.register(request))
-                .isInstanceOf(AuthException.class)
+                .isInstanceOf(ApiException.class)
                 .hasMessage("Username is already taken");
 
         verify(userRepository).existsByUsername("existinguser");
@@ -160,8 +160,8 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("register() → AuthException fırlatmalı (email zaten kullanımda)")
-    void register_shouldThrowAuthException_whenEmailAlreadyInUse() {
+    @DisplayName("register() → ApiException fırlatmalı (email zaten kullanımda)")
+    void register_shouldThrowApiException_whenEmailAlreadyInUse() {
         RegisterRequest request = RegisterRequest.builder()
                 .username("newuser")
                 .email("taken@example.com")
@@ -172,7 +172,7 @@ class AuthServiceTest {
         when(userRepository.existsByEmail("taken@example.com")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.register(request))
-                .isInstanceOf(AuthException.class)
+                .isInstanceOf(ApiException.class)
                 .hasMessage("Email is already in use");
 
         verify(userRepository, never()).save(any());
@@ -263,8 +263,8 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("login() → AuthException fırlatmalı (kimlik doğrulandı ama kullanıcı DB'de yok – edge case)")
-    void login_shouldThrowAuthException_whenUserNotFoundAfterAuthentication() {
+    @DisplayName("login() → ApiException fırlatmalı (kimlik doğrulandı ama kullanıcı DB'de yok – edge case)")
+    void login_shouldThrowApiException_whenUserNotFoundAfterAuthentication() {
         LoginRequest request = LoginRequest.builder()
                 .username("ghostuser")
                 .password("password123")
@@ -274,7 +274,7 @@ class AuthServiceTest {
         when(userRepository.findByUsername("ghostuser")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> authService.login(request))
-                .isInstanceOf(AuthException.class)
+                .isInstanceOf(ApiException.class)
                 .hasMessage("User not found");
     }
 

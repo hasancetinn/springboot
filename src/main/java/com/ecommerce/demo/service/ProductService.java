@@ -73,22 +73,49 @@ public class ProductService {
     @Transactional
     @CacheEvict(cacheNames = RedisCacheConfig.CACHE_PRODUCTS_INDEX, allEntries = true)
     public Product save(ProductRequest request) {
+        Category category =
+                categoryRepository
+                        .findById(request.getCategoryId())
+                        .orElseThrow(() -> new NotFoundException("Category does not exist"));
 
-        Optional<Category> existingCategory = categoryRepository.findByNameAny(request.getCategoryId());
+        Product newProduct =
+                Product.builder()
+                        .name(request.getName())
+                        .description(request.getDescription())
+                        .category(category)
+                        .image(request.getImage())
+                        .price(request.getPrice())
+                        .build();
 
-        if (existingCategory.isPresent()) {
-            Product newProduct = Product.builder()
-                    .name(request.getName())
-                    .description(request.getDescription())
-                    .category(existingCategory.get())
-                    .image(request.getImage())
-                    .price(request.getPrice())
-                    .build();
+        return productRepository.save(newProduct);
+    }
 
-            return productRepository.save(newProduct);
-        }else {
-            throw new NotFoundException("Category does not exist");
+    @Transactional
+    @CacheEvict(cacheNames = RedisCacheConfig.CACHE_PRODUCTS_INDEX, allEntries = true)
+    public Product update(Long id, ProductRequest request) {
+        Product product = findById(id);
+
+        Category category =
+                categoryRepository
+                        .findById(request.getCategoryId())
+                        .orElseThrow(() -> new NotFoundException("Category does not exist"));
+
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setImage(request.getImage());
+        product.setPrice(request.getPrice());
+        product.setCategory(category);
+
+        return productRepository.save(product);
+    }
+
+    @Transactional
+    @CacheEvict(cacheNames = RedisCacheConfig.CACHE_PRODUCTS_INDEX, allEntries = true)
+    public void delete(Long id) {
+        Optional<Product> existingProduct = productRepository.findById(id);
+        if (existingProduct.isEmpty()) {
+            throw new NotFoundException("Product Not found ID " +id);
         }
-
+        productRepository.delete(existingProduct.get());
     }
 }

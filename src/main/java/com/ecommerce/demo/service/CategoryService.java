@@ -3,10 +3,11 @@ package com.ecommerce.demo.service;
 import com.ecommerce.demo.config.RedisCacheConfig;
 import com.ecommerce.demo.dto.request.CategoryRequest;
 import com.ecommerce.demo.dto.response.PagedResponse;
-import com.ecommerce.demo.exception.AuthException;
+import com.ecommerce.demo.exception.ApiException;
 import com.ecommerce.demo.exception.NotFoundException;
 import com.ecommerce.demo.model.Category;
 import com.ecommerce.demo.repository.CategoryRepository;
+import com.ecommerce.demo.repository.ProductRepository;
 import com.ecommerce.demo.support.SearchNormalizer;
 
 import java.util.Optional;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
 
     @Transactional(readOnly = true)
     @Cacheable(cacheNames = RedisCacheConfig.CACHE_CATEGORIES_INDEX, key = "#page + ':' + #size + ':' + T(com.ecommerce.demo.support.SearchNormalizer).normalize(#search)")
@@ -73,7 +75,7 @@ public class CategoryService {
         if (existingCategory.isPresent()) {
             Category category = existingCategory.get();
             if (category.getDeletedAt() == null) {
-                throw new AuthException("Category name already exists", HttpStatus.CONFLICT);
+                throw new ApiException("Category name already exists", HttpStatus.CONFLICT);
             } else {
                 category.setDeletedAt(null);
                 return categoryRepository.save(category);
@@ -100,7 +102,7 @@ public class CategoryService {
         if (!category.getName().equals(request.getName())) {
             Optional<Category> conflicting = categoryRepository.findByNameAny(request.getName());
             if (conflicting.isPresent()) {
-                throw new AuthException("Category name already exists (potentially as deleted)", HttpStatus.CONFLICT);
+                throw new ApiException("Category name already exists (potentially as deleted)", HttpStatus.CONFLICT);
             }
         }
 
@@ -115,10 +117,15 @@ public class CategoryService {
             RedisCacheConfig.CACHE_PRODUCTS_INDEX
         },
         allEntries = true)
-    public void deleteById(Long id) {
+    public void delete(Long id) {
         if (!categoryRepository.existsById(id)) {
             throw new NotFoundException("Category not found with ID: " + id);
         }
+
+        if (productRepository.existsByCategoryId(id)) {
+            throw new ApiException("Cannot delete category with associated products", HttpStatus.CONFLICT);
+        }
+
         categoryRepository.deleteById(id);
     }
 }

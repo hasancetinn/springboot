@@ -4,7 +4,7 @@ import com.ecommerce.demo.dto.request.LoginRequest;
 import com.ecommerce.demo.dto.request.RegisterRequest;
 import com.ecommerce.demo.dto.request.TokenRefreshRequest;
 import com.ecommerce.demo.dto.response.AuthResponse;
-import com.ecommerce.demo.exception.AuthException;
+import com.ecommerce.demo.exception.ApiException;
 import com.ecommerce.demo.exception.TokenException;
 import com.ecommerce.demo.model.RefreshToken;
 import com.ecommerce.demo.model.Role;
@@ -41,10 +41,10 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new AuthException("Username is already taken", HttpStatus.CONFLICT);
+            throw new ApiException("Username is already taken", HttpStatus.CONFLICT);
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new AuthException("Email is already in use", HttpStatus.CONFLICT);
+            throw new ApiException("Email is already in use", HttpStatus.CONFLICT);
         }
 
         var user = User.builder()
@@ -73,7 +73,7 @@ public class AuthService {
                 )
         );
         var user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new AuthException("User not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
 
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = createRefreshToken(user);

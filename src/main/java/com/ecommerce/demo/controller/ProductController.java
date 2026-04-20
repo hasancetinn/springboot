@@ -51,5 +51,24 @@ public class ProductController {
                 .body(new ApiResponse<>(200, "Product created successfully", productService.save(request)));
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Product>> update(
+        @PathVariable Long id,
+        @Valid @RequestBody ProductRequest request) {
+
+        return ResponseEntity
+            .ok(new ApiResponse<>(200, "Product updated successfully", productService.update(id, request)));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Product>> delete(@PathVariable Long id) {
+        productService.delete(id);
+        return ResponseEntity
+            .ok(new ApiResponse<>(200, "Product deleted successfully", null));
+    }
+
+
 
 }

@@ -67,7 +67,7 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-        categoryService.deleteById(id);
+        categoryService.delete(id);
         return ResponseEntity.ok(
                 new ApiResponse<>(200, "Category deleted successfully", null)
         );
