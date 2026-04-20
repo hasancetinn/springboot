@@ -1,0 +1,39 @@
+# EditorConfig: https://editorconfig.org
+# IDE'lerin (IntelliJ, VS Code, Eclipse) bu dosyayı otomatik okuması için
+# ilgili EditorConfig eklentisinin kurulu olması gerekir.
+
+root = true
+
+# ── Tüm dosyalar için ortak kurallar ────────────────────────────────────────
+[*]
+charset                  = utf-8
+end_of_line              = lf
+insert_final_newline     = true
+trim_trailing_whitespace = true
+indent_style             = space
+indent_size              = 4
+
+# ── Java kaynak dosyaları ────────────────────────────────────────────────────
+[*.java]
+indent_size              = 4
+max_line_length          = 120
+
+# ── XML / pom.xml ───────────────────────────────────────────────────────────
+[*.xml]
+indent_size              = 2
+
+# ── YAML / properties ───────────────────────────────────────────────────────
+[*.{yml,yaml,properties}]
+indent_size              = 2
+
+# ── JSON ────────────────────────────────────────────────────────────────────
+[*.json]
+indent_size              = 2
+
+# ── Markdown ────────────────────────────────────────────────────────────────
+[*.md]
+trim_trailing_whitespace = false
+
+# ── Shell scripts ────────────────────────────────────────────────────────────
+[*.sh]
+end_of_line = lf
