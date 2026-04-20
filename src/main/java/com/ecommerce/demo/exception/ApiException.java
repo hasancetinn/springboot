@@ -2,12 +2,12 @@ package com.ecommerce.demo.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class AuthException extends BaseException {
-    public AuthException(String message) {
+public class ApiException extends BaseException {
+    public ApiException(String message) {
         super(message, HttpStatus.BAD_REQUEST);
     }
 
-    public AuthException(String message, HttpStatus status) {
+    public ApiException(String message, HttpStatus status) {
         super(message, status);
     }
 }
