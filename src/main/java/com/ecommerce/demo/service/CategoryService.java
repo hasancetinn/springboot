@@ -42,9 +42,7 @@ public class CategoryService {
         return PagedResponse.fromPage(result.map(this::snapshotCategory));
     }
 
-    /**
-     * Plain snapshot for API/cache — no lazy collections or proxies.
-     */
+
     private Category snapshotCategory(Category c) {
         return Category.builder()
             .id(c.getId())

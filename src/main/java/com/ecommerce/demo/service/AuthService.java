@@ -12,6 +12,8 @@ import com.ecommerce.demo.model.User;
 import com.ecommerce.demo.repository.RefreshTokenRepository;
 import com.ecommerce.demo.repository.UserRepository;
 import com.ecommerce.demo.security.JwtService;
+import com.ecommerce.demo.dto.event.EmailEvent;
+import com.ecommerce.demo.service.messaging.KafkaProducerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -34,6 +36,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final KafkaProducerService kafkaProducerService;
 
     @Value("${application.security.jwt.refresh-token.expiration}")
     private long refreshExpiration;
@@ -57,6 +60,13 @@ public class AuthService {
 
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = createRefreshToken(user);
+
+        // Produce Welcome Email Event
+        kafkaProducerService.sendEmailEvent(EmailEvent.builder()
+                .to(user.getEmail())
+                .subject("Welcome to E-Commerce Demo!")
+                .body("Hello " + user.getUsername() + ", welcome to our platform!")
+                .build());
 
         return AuthResponse.builder()
                 .accessToken(jwtToken)

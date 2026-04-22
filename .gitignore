@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Local-only Spring profile secrets
+src/main/resources/application-local.properties
